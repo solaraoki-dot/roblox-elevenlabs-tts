@@ -9,7 +9,7 @@ const API_KEY = process.env.ELEVENLABS_API_KEY;
 
 console.log("API KEY FOUND:", !!API_KEY);
 
-const VOICE_ID = "hO2yZ8lxM3axUxL8OeKX";
+const VOICE_ID = "fA4eSDsx5xNZ1RV7zEu5";
 
 app.get("/", (req, res) => {
     res.send("ElevenLabs Roblox TTS Server Running");
