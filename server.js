@@ -8,26 +8,14 @@ app.use(express.json());
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const VOICE_ID = "hO2yZ8lxM3axUxL8OeKX";
 
-app.get("/", (req, res) => {
-    res.send("ElevenLabs Roblox TTS Server Running");
-});
+app.get("/testtts", async (req, res) => {
 
-app.post("/tts", async (req, res) => {
     try {
-
-        const text = req.body.text;
-
-        if (!text) {
-            return res.status(400).json({
-                success: false,
-                error: "No text"
-            });
-        }
 
         const response = await axios.post(
             `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
             {
-                text: text,
+                text: "Hello from Roblox donation system",
                 model_id: "eleven_multilingual_v2"
             },
             {
@@ -39,24 +27,21 @@ app.post("/tts", async (req, res) => {
             }
         );
 
-        const audioBase64 = Buffer.from(response.data).toString("base64");
-
-        res.json({
-            success: true,
-            audio: audioBase64
-        });
+        res.send("TTS SUCCESS");
 
     } catch (err) {
 
-        console.error(err?.response?.data || err);
+        if (err.response?.data) {
+            console.error(
+                Buffer.from(err.response.data).toString()
+            );
+        } else {
+            console.error(err);
+        }
 
-        res.status(500).json({
-            success: false,
-            error: "TTS Failed"
-        });
+        res.status(500).send("TTS FAILED");
     }
 });
-
 app.get("/testtts", async (req, res) => {
 
     try {
