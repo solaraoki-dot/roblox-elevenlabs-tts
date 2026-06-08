@@ -65,11 +65,13 @@ app.get("/testtts", async (req, res) => {
 
     } catch (err) {
 
-        console.error(err?.response?.data || err);
-
-        res.status(500).send("TTS FAILED");
-    }
-});
+       console.error(
+    JSON.stringify(
+        JSON.parse(Buffer.from(err.response.data).toString()),
+        null,
+        2
+    )
+);
 
 const PORT = process.env.PORT || 8080;
 
