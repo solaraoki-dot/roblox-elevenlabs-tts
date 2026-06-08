@@ -82,14 +82,21 @@ app.get("/testtts", async (req, res) => {
 
     } catch (err) {
 
-        console.error(err.response?.data || err.message);
+    console.log("===== OPENAI ERROR =====");
 
-        res.status(500).send("TTS FAILED");
+    if (err.response?.data) {
+
+        try {
+            console.log(
+                Buffer.from(err.response.data).toString("utf8")
+            );
+        } catch (e) {
+            console.log(err.response.data);
+        }
+
+    } else {
+        console.log(err.message);
     }
-});
 
-const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, () => {
-    console.log(`TTS Server Running On ${PORT}`);
-});
+    res.status(500).send("TTS FAILED");
+}
