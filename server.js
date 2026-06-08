@@ -6,6 +6,7 @@ const app = express();
 app.use(express.json());
 
 const API_KEY = process.env.ELEVENLABS_API_KEY;
+console.log("API KEY FOUND:", !!API_KEY);
 const VOICE_ID = "hO2yZ8lxM3axUxL8OeKX";
 
 app.get("/", (req, res) => {
