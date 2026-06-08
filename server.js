@@ -57,6 +57,35 @@ app.post("/tts", async (req, res) => {
     }
 });
 
+app.get("/testtts", async (req, res) => {
+
+    try {
+
+        const response = await axios.post(
+            `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+            {
+                text: "Hello from Roblox donation system",
+                model_id: "eleven_multilingual_v2"
+            },
+            {
+                responseType: "arraybuffer",
+                headers: {
+                    "xi-api-key": API_KEY,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        res.send("TTS SUCCESS");
+
+    } catch (err) {
+
+        console.error(err?.response?.data || err);
+
+        res.status(500).send("TTS FAILED");
+    }
+});
+
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
