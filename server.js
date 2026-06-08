@@ -29,18 +29,13 @@ app.get("/testtts", async (req, res) => {
 
         res.send("TTS SUCCESS");
 
-    } catch (err) {
+    catch (err) {
+    console.log(
+        Buffer.from(err.response.data).toString("utf8")
+    );
 
-        if (err.response?.data) {
-            console.error(
-                Buffer.from(err.response.data).toString()
-            );
-        } else {
-            console.error(err);
-        }
-
-        res.status(500).send("TTS FAILED");
-    }
+    res.status(500).send("TTS FAILED");
+}
 });
 app.get("/testtts", async (req, res) => {
 
