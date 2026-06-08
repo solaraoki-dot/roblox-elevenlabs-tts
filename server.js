@@ -7,12 +7,13 @@ app.use(express.json());
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+console.log("OPENAI KEY FOUND:", !!OPENAI_API_KEY);
+
 app.get("/", (req, res) => {
     res.send("OpenAI Roblox TTS Server Running");
 });
 
 app.post("/tts", async (req, res) => {
-
     try {
 
         const text = req.body.text;
@@ -20,7 +21,7 @@ app.post("/tts", async (req, res) => {
         if (!text) {
             return res.status(400).json({
                 success: false,
-                error: "No text"
+                error: "No text provided"
             });
         }
 
@@ -49,11 +50,25 @@ app.post("/tts", async (req, res) => {
 
     } catch (err) {
 
-        console.error(err.response?.data || err.message);
+        console.log("===== TTS ERROR =====");
+
+        if (err.response?.data) {
+
+            try {
+                console.log(
+                    Buffer.from(err.response.data).toString("utf8")
+                );
+            } catch {
+                console.log(err.response.data);
+            }
+
+        } else {
+            console.log(err.message);
+        }
 
         res.status(500).json({
             success: false,
-            error: "TTS Failed"
+            error: "TTS FAILED"
         });
     }
 });
@@ -82,21 +97,28 @@ app.get("/testtts", async (req, res) => {
 
     } catch (err) {
 
-    console.log("===== OPENAI ERROR =====");
+        console.log("===== TEST TTS ERROR =====");
 
-    if (err.response?.data) {
+        if (err.response?.data) {
 
-        try {
-            console.log(
-                Buffer.from(err.response.data).toString("utf8")
-            );
-        } catch (e) {
-            console.log(err.response.data);
+            try {
+                console.log(
+                    Buffer.from(err.response.data).toString("utf8")
+                );
+            } catch {
+                console.log(err.response.data);
+            }
+
+        } else {
+            console.log(err.message);
         }
 
-    } else {
-        console.log(err.message);
+        res.status(500).send("TTS FAILED");
     }
+});
 
-    res.status(500).send("TTS FAILED");
-}
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+    console.log(`TTS Server Running On ${PORT}`);
+});
