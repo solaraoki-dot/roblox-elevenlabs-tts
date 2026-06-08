@@ -6,7 +6,9 @@ const app = express();
 app.use(express.json());
 
 const API_KEY = process.env.ELEVENLABS_API_KEY;
+
 console.log("API KEY FOUND:", !!API_KEY);
+
 const VOICE_ID = "hO2yZ8lxM3axUxL8OeKX";
 
 app.get("/", (req, res) => {
@@ -20,7 +22,7 @@ app.post("/tts", async (req, res) => {
         if (!text) {
             return res.status(400).json({
                 success: false,
-                error: "No text"
+                error: "No text provided"
             });
         }
 
@@ -41,26 +43,28 @@ app.post("/tts", async (req, res) => {
 
         const audioBase64 = Buffer.from(response.data).toString("base64");
 
-        res.json({
+        return res.json({
             success: true,
             audio: audioBase64
         });
 
-   }catch (err) {
+    } catch (err) {
 
-    console.error("FULL ERROR:");
+        console.error("===== TTS ERROR =====");
 
-    if (err.response?.data) {
-        console.error(
-            Buffer.from(err.response.data).toString("utf8")
-        );
-    }
+        if (err.response?.data) {
+            try {
+                console.error(
+                    Buffer.from(err.response.data).toString("utf8")
+                );
+            } catch {
+                console.error(err.response.data);
+            }
+        }
 
-    console.error(err.message);
+        console.error(err.message);
 
-    res.status(500).send("TTS FAILED");
-}
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             error: "TTS Failed"
         });
@@ -69,6 +73,7 @@ app.post("/tts", async (req, res) => {
 
 app.get("/testtts", async (req, res) => {
     try {
+
         await axios.post(
             `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
             {
@@ -88,7 +93,9 @@ app.get("/testtts", async (req, res) => {
 
     } catch (err) {
 
-        if (err.response && err.response.data) {
+        console.error("===== TEST TTS ERROR =====");
+
+        if (err.response?.data) {
             try {
                 console.error(
                     Buffer.from(err.response.data).toString("utf8")
@@ -96,9 +103,9 @@ app.get("/testtts", async (req, res) => {
             } catch {
                 console.error(err.response.data);
             }
-        } else {
-            console.error(err);
         }
+
+        console.error(err.message);
 
         res.status(500).send("TTS FAILED");
     }
