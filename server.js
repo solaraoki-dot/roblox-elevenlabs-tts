@@ -8,14 +8,25 @@ app.use(express.json());
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const VOICE_ID = "hO2yZ8lxM3axUxL8OeKX";
 
-app.get("/testtts", async (req, res) => {
+app.get("/", (req, res) => {
+    res.send("ElevenLabs Roblox TTS Server Running");
+});
 
+app.post("/tts", async (req, res) => {
     try {
+        const text = req.body.text;
+
+        if (!text) {
+            return res.status(400).json({
+                success: false,
+                error: "No text"
+            });
+        }
 
         const response = await axios.post(
             `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
             {
-                text: "Hello from Roblox donation system",
+                text: text,
                 model_id: "eleven_multilingual_v2"
             },
             {
@@ -27,21 +38,37 @@ app.get("/testtts", async (req, res) => {
             }
         );
 
-        res.send("TTS SUCCESS");
+        const audioBase64 = Buffer.from(response.data).toString("base64");
 
-    catch (err) {
-    console.log(
-        Buffer.from(err.response.data).toString("utf8")
-    );
+        res.json({
+            success: true,
+            audio: audioBase64
+        });
 
-    res.status(500).send("TTS FAILED");
-}
+    } catch (err) {
+
+        if (err.response && err.response.data) {
+            try {
+                console.error(
+                    Buffer.from(err.response.data).toString("utf8")
+                );
+            } catch {
+                console.error(err.response.data);
+            }
+        } else {
+            console.error(err);
+        }
+
+        res.status(500).json({
+            success: false,
+            error: "TTS Failed"
+        });
+    }
 });
+
 app.get("/testtts", async (req, res) => {
-
     try {
-
-        const response = await axios.post(
+        await axios.post(
             `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
             {
                 text: "Hello from Roblox donation system",
@@ -60,13 +87,21 @@ app.get("/testtts", async (req, res) => {
 
     } catch (err) {
 
-       console.error(
-    JSON.stringify(
-        JSON.parse(Buffer.from(err.response.data).toString()),
-        null,
-        2
-    )
-);
+        if (err.response && err.response.data) {
+            try {
+                console.error(
+                    Buffer.from(err.response.data).toString("utf8")
+                );
+            } catch {
+                console.error(err.response.data);
+            }
+        } else {
+            console.error(err);
+        }
+
+        res.status(500).send("TTS FAILED");
+    }
+});
 
 const PORT = process.env.PORT || 8080;
 
