@@ -46,19 +46,20 @@ app.post("/tts", async (req, res) => {
             audio: audioBase64
         });
 
-    } catch (err) {
+   } catch (err) {
 
-        if (err.response && err.response.data) {
-            try {
-                console.error(
-                    Buffer.from(err.response.data).toString("utf8")
-                );
-            } catch {
-                console.error(err.response.data);
-            }
-        } else {
-            console.error(err);
-        }
+    console.error("FULL ERROR:");
+
+    if (err.response?.data) {
+        console.error(
+            Buffer.from(err.response.data).toString("utf8")
+        );
+    }
+
+    console.error(err.message);
+
+    res.status(500).send("TTS FAILED");
+}
 
         res.status(500).json({
             success: false,
