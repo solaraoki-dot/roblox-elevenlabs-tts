@@ -46,7 +46,7 @@ app.post("/tts", async (req, res) => {
             audio: audioBase64
         });
 
-   } catch (err) {
+   }catch (err) {
 
     console.error("FULL ERROR:");
 
@@ -60,7 +60,6 @@ app.post("/tts", async (req, res) => {
 
     res.status(500).send("TTS FAILED");
 }
-
         res.status(500).json({
             success: false,
             error: "TTS Failed"
