@@ -1,69 +1,57 @@
 const express = require("express");
-const fs = require("fs");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
-
-const DATA_FILE = "./donations.json";
 
 let donations = [];
 let latestId = 0;
 
-if (fs.existsSync(DATA_FILE)) {
-    try {
-        const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-        donations = data.donations || [];
-        latestId = data.latestId || 0;
-    } catch (e) {
-        console.log("Failed loading donations.json");
-    }
-}
-
-function saveData() {
-    fs.writeFileSync(
-        DATA_FILE,
-        JSON.stringify({
-            latestId,
-            donations
-        }, null, 2)
-    );
-}
-
+/*
+====================================
+SAWERIA WEBHOOK
+====================================
+*/
 app.post("/webhook/saweria", (req, res) => {
     try {
 
         const payload = req.body;
 
+        console.log("===== SAWERIA WEBHOOK =====");
+        console.log(JSON.stringify(payload, null, 2));
+
         latestId++;
 
         const donation = {
             id: latestId.toString(),
+
             donator_name:
                 payload.supporter_name ||
+                payload.donator_name ||
                 payload.name ||
+                payload.username ||
                 "Anonymous",
 
             amount_raw:
+                Number(payload.amount_raw) ||
                 Number(payload.amount) ||
                 Number(payload.vote_quantity) ||
                 0,
 
             message:
                 payload.message ||
+                payload.comment ||
                 ""
         };
 
         donations.push(donation);
 
-        if (donations.length > 500) {
+        if (donations.length > 1000) {
             donations.shift();
         }
 
-        saveData();
-
-        console.log("Donation:", donation);
+        console.log("Donation Saved:", donation);
 
         return res.status(200).json({
             success: true
@@ -71,35 +59,83 @@ app.post("/webhook/saweria", (req, res) => {
 
     } catch (err) {
 
-        console.error(err);
+        console.error("Webhook Error:", err);
 
         return res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+/*
+====================================
+ROBLOX ENDPOINT
+====================================
+*/
+app.get("/get-donation", (req, res) => {
+
+    try {
+
+        const afterId = req.query.after_id;
+
+        let result;
+
+        if (afterId) {
+
+            result = donations.filter(
+                d => Number(d.id) > Number(afterId)
+            );
+
+        } else {
+
+            result = donations;
+        }
+
+        res.json({
+            success: true,
+            latest_id: latestId.toString(),
+            donations: result
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
             success: false
         });
     }
 });
 
-app.get("/get-donation", (req, res) => {
-
-    const afterId = req.query.after_id;
-
-    let result = [];
-
-    if (afterId) {
-        result = donations.filter(
-            d => Number(d.id) > Number(afterId)
-        );
-    }
+/*
+====================================
+CHECK STATUS
+====================================
+*/
+app.get("/", (req, res) => {
 
     res.json({
-        success: true,
-        latest_id: latestId.toString(),
-        donations: result
+        status: "online",
+        latest_id: latestId,
+        total_donations: donations.length
     });
+
 });
 
-app.get("/", (req, res) => {
-    res.send("Saweria API Running");
+/*
+====================================
+DEBUG
+====================================
+*/
+app.get("/debug", (req, res) => {
+
+    res.json({
+        latest_id: latestId,
+        total_donations: donations.length,
+        donations: donations
+    });
+
 });
 
 app.listen(PORT, () => {
